@@ -1,12 +1,14 @@
 // app/page.tsx
-'use client'; // This directive indicates that this is a Client Component
+'use client';
 
 import Head from 'next/head';
 import { Navbar, Nav, Button, Container, Row, Col, Form, InputGroup, Card } from 'react-bootstrap';
-// import { supabase } from '../utils/supabaseClient'; // Uncomment this line when you start fetching data
+import { useState, useEffect } from 'react'; // นำเข้า useState และ useEffect
+import { supabase } from '../utils/supabaseClient'; // ยกเลิกคอมเมนต์บรรทัดนี้
 
 // Define interfaces for component props to ensure type safety in TypeScript
-interface CourseCardProps {
+interface Course { // เปลี่ยนชื่อ interface จาก CourseCardProps เป็น Course
+  id: string; // เพิ่ม id สำหรับ key ในการ map
   code: string;
   title: string;
   instructor: string;
@@ -17,22 +19,62 @@ interface CourseCardProps {
   preview: string;
 }
 
-interface TrendingCourseItemProps {
+interface TrendingCourse { // เปลี่ยนชื่อ interface จาก TrendingCourseItemProps เป็น TrendingCourse
+  id: string; // เพิ่ม id สำหรับ key ในการ map
   title: string;
   rating: number;
   reviews: number;
 }
 
 export default function Home() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [trendingCourses, setTrendingCourses] = useState<TrendingCourse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchCourses() {
+      setLoading(true);
+      setError(null);
+      const { data, error } = await supabase
+        .from('courses') // เปลี่ยน 'courses' เป็นชื่อตารางวิชาเรียนของคุณใน Supabase
+        .select('*'); // ดึงทุกคอลัมน์ หรือระบุคอลัมน์ที่ต้องการ
+      
+      if (error) {
+        console.error('Error fetching courses:', error);
+        setError('ไม่สามารถโหลดวิชาเรียนได้: ' + error.message);
+      } else {
+        setCourses(data as Course[]);
+      }
+      setLoading(false);
+    }
+
+    async function fetchTrendingCourses() {
+      const { data, error } = await supabase
+        .from('trending_courses') // เปลี่ยน 'trending_courses' เป็นชื่อตารางวิชายอดนิยมของคุณใน Supabase
+        .select('*')
+        .order('reviews', { ascending: false }) // ตัวอย่าง: เรียงตามจำนวนรีวิวสูงสุด
+        .limit(5); // ตัวอย่าง: ดึงมา 5 รายการ
+
+      if (error) {
+        console.error('Error fetching trending courses:', error);
+        // ไม่ต้อง set error ทับกัน เพราะ error หลักจะแสดงผลรวม
+      } else {
+        setTrendingCourses(data as TrendingCourse[]);
+      }
+    }
+
+    fetchCourses();
+    fetchTrendingCourses();
+  }, []); // [] หมายความว่า useEffect จะทำงานแค่ครั้งเดียวเมื่อ Component mount
+
   // CourseCard Component: Displays individual course information
-  // Added h-100 class to Card component to make it take full height of its parent column
-  const CourseCard = ({ code, title, instructor, rating, reviews, students, credits, preview }: CourseCardProps) => (
-    <Card className="course-card h-100"> {/* Added h-100 here */}
+  const CourseCard = ({ code, title, instructor, rating, reviews, students, credits, preview }: Course) => (
+    <Card className="course-card h-100">
       <Card.Body>
         <div className="d-flex justify-content-between align-items-start mb-3">
           <span className="course-code">{code}</span>
           <div className="rating d-flex align-items-center">
-            {/* Renders stars based on the rating value */}
             <span className="stars">{'★'.repeat(Math.floor(rating))}</span>
             <span className="ms-1">{rating}</span>
           </div>
@@ -50,7 +92,7 @@ export default function Home() {
   );
 
   // TrendingCourseItem Component: Displays popular courses in the sidebar
-  const TrendingCourseItem = ({ title, rating, reviews }: TrendingCourseItemProps) => (
+  const TrendingCourseItem = ({ title, rating, reviews }: TrendingCourse) => (
     <li>
       <div className="trending-title">{title}</div>
       <div className="trending-stats">★{rating} • {reviews} รีวิว</div>
@@ -65,7 +107,6 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Header section with navigation bar */}
       <header>
         <Navbar expand="lg" className="container">
           <Navbar.Brand href="#" className="logo">Learn Radar</Navbar.Brand>
@@ -86,9 +127,7 @@ export default function Home() {
         </Navbar>
       </header>
 
-      {/* Main content area */}
       <main className="container">
-        {/* Hero section */}
         <section className="hero">
           <div className="hero-content">
             <h1>รีวิววิชาเรียนจากนักศึกษาจริง</h1>
@@ -97,7 +136,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Search and Filter section */}
         <section className="search-section" id="search">
           <InputGroup className="mb-3 search-container">
             <Form.Control
@@ -130,74 +168,26 @@ export default function Home() {
         </section>
 
         <div className="main-content">
-          {/* Courses section displaying course cards */}
           <section className="courses-section">
-            {/* Using React-Bootstrap Row and Col for responsive grid layout */}
-            {/* g-4 provides spacing (gutter) between columns */}
             <Row className="g-4">
-              {/* Each Col defines how much space a CourseCard takes on different screen sizes */}
-              {/* xs={12}: Full width on extra small screens (1 column) */}
-              {/* md={6}: Half width on medium screens (2 columns) */}
-              {/* lg={4}: One-third width on large screens (3 columns) */}
-              <Col xs={12} md={6} lg={4}>
-                <CourseCard
-                  code="CS101"
-                  title="Introduction to Computer Science"
-                  instructor="อ.ดร.สมชาย ใจดี"
-                  rating={4.8}
-                  reviews={127}
-                  students={580}
-                  credits={3}
-                  preview="วิชาพื้นฐานการเขียนโปรแกรม สอนดีมาก อาจารย์ใจดี ใช้ Python เป็นหลัก มีแลปทุกสัปดาห์..."
-                />
-              </Col>
-              <Col xs={12} md={6} lg={4}>
-                <CourseCard
-                  code="MATH201"
-                  title="Calculus II"
-                  instructor="อ.ดร.วิภา คณิตคม"
-                  rating={4.2}
-                  reviews={89}
-                  students={320}
-                  credits={3}
-                  preview="คณิตศาสตร์ระดับกลาง ต้องทำโจทย์เยอะ แต่อาจารย์สอนละเอียด มีการบ้านทุกสัปดาห์..."
-                />
-              </Col>
-              <Col xs={12} md={6} lg={4}>
-                <CourseCard
-                  code="ENG301"
-                  title="Advanced English Communication"
-                  instructor="Prof. Sarah Johnson"
-                  rating={4.9}
-                  reviews={156}
-                  students={240}
-                  credits={3}
-                  preview="คลาสภาษาอังกฤษที่ดีที่สุด! อาจารย์เป็นเจ้าของภาษา สอนสนุก มี activity เยอะ..."
-                />
-              </Col>
-              <Col xs={12} md={6} lg={4}>
-                <CourseCard
-                  code="BUS205"
-                  title="Business Statistics"
-                  instructor="อ.ดร.ประเสริฐ สถิติดี"
-                  rating={3.6}
-                  reviews={74}
-                  students={180}
-                  credits={3}
-                  preview="วิชาสถิติเพื่อธุรกิจ ค่อนข้างยาก ต้องใช้ Excel เยอะ มีสอบกลางเทอมและปลายเทอม..."
-                />
-              </Col>
+              {loading && <p>กำลังโหลดวิชาเรียน...</p>}
+              {error && <p style={{ color: 'red' }}>{error}</p>}
+              {!loading && !error && courses.length === 0 && <p>ไม่พบวิชาเรียน</p>}
+              {courses.map((course) => (
+                <Col xs={12} md={6} lg={4} key={course.id}> {/* ใช้ course.id เป็น key */}
+                  <CourseCard {...course} />
+                </Col>
+              ))}
             </Row>
           </section>
 
-          {/* Sidebar section */}
           <aside className="sidebar">
             <h3>🔥 วิชายอดนิยม</h3>
             <ul className="trending-courses">
-              <TrendingCourseItem title="Introduction to Psychology" rating={4.7} reviews={234} />
-              <TrendingCourseItem title="Digital Marketing" rating={4.6} reviews={189} />
-              <TrendingCourseItem title="Data Science Fundamentals" rating={4.8} reviews={156} />
-              <TrendingCourseItem title="Creative Writing" rating={4.9} reviews={98} />
+              {trendingCourses.length === 0 && <p>ไม่พบวิชายอดนิยม</p>}
+              {trendingCourses.map((course) => (
+                <TrendingCourseItem key={course.id} {...course} />
+              ))}
             </ul>
 
             <div className="quick-actions mt-4">
@@ -210,14 +200,12 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer section */}
       <footer className="footer">
         <Container>
           <p>&copy; 2025 Learn Radar. สร้างโดยนักศึกษา เพื่อนักศึกษา</p>
         </Container>
       </footer>
 
-      {/* Floating Add Button for new reviews */}
       <div className="floating-add-btn" title="เขียนรีวิวใหม่">
         ✏️
       </div>
