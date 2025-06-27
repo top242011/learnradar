@@ -15,11 +15,11 @@ interface Course {
   faculty: string;
   credits: number;
   // คอลัมน์ด้านล่างนี้จะถูกคำนวณหรือดึงจาก reviews
-  instructor: string; // คอลัมน์นี้ยังไม่มีใน courses, อาจต้องเพิ่มหรือใช้ค่าเริ่มต้น
+  instructor: string;
   rating: number; // คะแนนเฉลี่ยจาก reviews
   reviews: number; // จำนวนรีวิว
-  students: number; // สมมติว่ามี
-  preview: string; // สมมติว่ามี
+  // ลบ students: number; ออกไป
+  preview: string;
 }
 
 interface TrendingCourse {
@@ -39,18 +39,16 @@ export default function Home() {
     async function fetchCourses() {
       setLoading(true);
       setError(null);
-      // ดึงข้อมูล courses และ JOIN กับ reviews เพื่อดึง rating_overall
-      // 'reviews(rating_overall)' จะทำงานได้ก็ต่อเมื่อมี Foreign Key 'course_id' ในตาราง reviews
       const { data, error } = await supabase
         .from('courses')
-        .select('*, reviews(rating_overall)'); // ดึงทุกคอลัมน์จาก courses และดึง rating_overall จาก reviews ที่เชื่อมโยงกัน
+        .select('*, reviews(rating_overall)');
 
-      if (error) {
+      if (error && error.message) { 
         console.error('Error fetching courses:', error);
         setError('ไม่สามารถโหลดวิชาเรียนได้: ' + error.message);
       } else {
-        const fetchedCourses: Course[] = data.map((item: any) => {
-          // คำนวณคะแนนเฉลี่ยและจำนวนรีวิว
+        // เพิ่มการตรวจสอบ data ให้เป็น Array ว่างเปล่าหากเป็น null
+        const fetchedCourses: Course[] = (data || []).map((item: any) => {
           const reviewsCount = item.reviews ? item.reviews.length : 0;
           let averageRating = 0;
           if (reviewsCount > 0) {
@@ -65,11 +63,10 @@ export default function Home() {
             course_name: item.course_name || '',
             faculty: item.faculty || '',
             credits: item.credits || 0,
-            instructor: item.instructor || 'ไม่ระบุ', // หากไม่มีคอลัมน์ instructor ใน courses ให้ใช้ค่าเริ่มต้น
-            rating: parseFloat(averageRating.toFixed(1)), // ปัดทศนิยม 1 ตำแหน่ง
+            instructor: item.instructor || 'ไม่ระบุ',
+            rating: parseFloat(averageRating.toFixed(1)),
             reviews: reviewsCount,
-            students: item.students || 0, // หากไม่มีคอลัมน์ students ใน courses ให้ใช้ค่าเริ่มต้น
-            preview: item.preview || 'ไม่มีคำอธิบายย่อสำหรับวิชานี้', // หากไม่มีคอลัมน์ preview ใน courses ให้ใช้ค่าเริ่มต้น
+            preview: item.preview || 'ไม่มีคำอธิบายย่อสำหรับวิชานี้',
           };
         });
         setCourses(fetchedCourses);
@@ -78,16 +75,17 @@ export default function Home() {
     }
 
     async function fetchTrendingCourses() {
-      // ดึงข้อมูลจากตาราง courses และดึง reviews ที่เชื่อมโยงกัน เพื่อคำนวณคะแนน/รีวิว
       const { data, error } = await supabase
         .from('courses')
-        .select('id, course_name, reviews(rating_overall)'); // ดึงชื่อวิชาและรีวิวทั้งหมด
+        .select('id, course_name, reviews(rating_overall)');
 
-      if (error) {
+      if (error && error.message) { 
         console.error('Error fetching trending courses:', error);
       } else {
-        // คำนวณคะแนนเฉลี่ยและจำนวนรีวิวสำหรับวิชายอดนิยม
-        const fetchedTrendingCourses: TrendingCourse[] = data.map((item: any) => {
+        console.log("Fetched Trending Courses Raw Data:", data); 
+        
+        // เพิ่มการตรวจสอบ data ให้เป็น Array ว่างเปล่าหากเป็น null ก่อนเรียกใช้ .map()
+        const fetchedTrendingCourses: TrendingCourse[] = (data || []).map((item: any) => {
           const reviewsCount = item.reviews ? item.reviews.length : 0;
           let averageRating = 0;
           if (reviewsCount > 0) {
@@ -101,9 +99,10 @@ export default function Home() {
             rating: parseFloat(averageRating.toFixed(1)),
             reviews: reviewsCount,
           };
-        }).sort((a, b) => b.reviews - a.reviews) // เรียงตามจำนวนรีวิวมากที่สุด
-          .slice(0, 5); // จำกัด 5 รายการ
+        }).sort((a, b) => b.reviews - a.reviews)
+          .slice(0, 5);
 
+        console.log("Processed Trending Courses Data:", fetchedTrendingCourses); 
         setTrendingCourses(fetchedTrendingCourses);
       }
     }
@@ -113,7 +112,7 @@ export default function Home() {
   }, []);
 
   // CourseCard Component: Displays individual course information
-  const CourseCard = ({ course_code, course_name, instructor, rating, reviews, students, credits, preview, university_name, faculty }: Course) => (
+  const CourseCard = ({ course_code, course_name, instructor, rating, reviews, credits, preview, university_name, faculty }: Omit<Course, 'students'>) => (
     <Card className="course-card h-100">
       <Card.Body>
         <div className="d-flex justify-content-between align-items-start mb-3">
@@ -127,7 +126,6 @@ export default function Home() {
         <Card.Subtitle className="mb-2 text-muted course-instructor">{instructor}</Card.Subtitle>
         <div className="d-flex justify-content-between mb-3 font-size-small course-stats">
           <span className="stat-item">📚 {reviews} รีวิว</span>
-          <span className="stat-item">👥 {students} คน</span>
           <span className="stat-item">⏱️ {credits} หน่วยกิต</span>
         </div>
         <Card.Text className="course-preview">{preview}</Card.Text>

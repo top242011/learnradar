@@ -3,48 +3,22 @@ html,
 body {
     padding: 0;
     margin: 0;
-    font-family: 'IBM Plex Sans Thai', sans-serif; /* เปลี่ยนตรงนี้เป็น IBM Plex Sans Thai */
+    font-family: 'IBM Plex Sans Thai', sans-serif;
     line-height: 1.6;
-    color: #333;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #333; /* สามารถใช้สีที่เข้มขึ้น เช่น #222 สำหรับข้อความ */
+    /* เปลี่ยน Background Gradient หลักของ Body */
+    background: linear-gradient(135deg, #F0F8FF 0%, #E0F2FF 100%); /* เปลี่ยนจากม่วงเป็นฟ้าอ่อน */
     min-height: 100vh;
 }
 
-/* Class สำหรับน้ำหนักฟอนต์ต่างๆ */
-.ibm-plex-sans-thai-thin {
-    font-weight: 100;
-    font-style: normal;
-}
-
-.ibm-plex-sans-thai-extralight {
-    font-weight: 200;
-    font-style: normal;
-}
-
-.ibm-plex-sans-thai-light {
-    font-weight: 300;
-    font-style: normal;
-}
-
-.ibm-plex-sans-thai-regular {
-    font-weight: 400;
-    font-style: normal;
-}
-
-.ibm-plex-sans-thai-medium {
-    font-weight: 500;
-    font-style: normal;
-}
-
-.ibm-plex-sans-thai-semibold {
-    font-weight: 600;
-    font-style: normal;
-}
-
-.ibm-plex-sans-thai-bold {
-    font-weight: 700;
-    font-style: normal;
-}
+/* คุณสามารถเพิ่ม class ที่คุณให้มาเพื่อใช้สำหรับน้ำหนักฟอนต์ที่แตกต่างกันได้ */
+.ibm-plex-sans-thai-thin { font-weight: 100; font-style: normal; }
+.ibm-plex-sans-thai-extralight { font-weight: 200; font-style: normal; }
+.ibm-plex-sans-thai-light { font-weight: 300; font-style: normal; }
+.ibm-plex-sans-thai-regular { font-weight: 400; font-style: normal; }
+.ibm-plex-sans-thai-medium { font-weight: 500; font-style: normal; }
+.ibm-plex-sans-thai-semibold { font-weight: 600; font-style: normal; }
+.ibm-plex-sans-thai-bold { font-weight: 700; font-style: normal; }
 
 /* โค้ด CSS อื่นๆ ที่มีอยู่แล้ว - คงไว้ตามเดิม */
 * {
@@ -63,19 +37,20 @@ a {
 }
 
 header {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.95); /* คงค่าเดิมหรือเปลี่ยนเป็นสีฟ้าอ่อนตามต้องการ */
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* ปรับ shadow ให้เบาลง */
     position: sticky;
     top: 0;
     z-index: 1000;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(0, 123, 255, 0.1); /* ใช้สี accent หรือรอง */
 }
 
 .logo {
     font-size: 1.8rem;
     font-weight: bold;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    /* เปลี่ยน Gradient ของ Logo */
+    background: linear-gradient(45deg, #007BFF, #5B9CFF); /* เปลี่ยนจากม่วงเป็นน้ำเงิน/ฟ้า */
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -84,14 +59,14 @@ header {
 
 .nav-links a {
     text-decoration: none;
-    color: #333;
+    color: #333; /* คงเดิมหรือเปลี่ยนเป็นสีรอง #5B9CFF ที่เข้มขึ้น */
     font-weight: 500;
     transition: all 0.3s ease;
     position: relative;
 }
 
 .nav-links a:hover {
-    color: #667eea;
+    color: #007BFF; /* สี Accent เมื่อ Hover */
 }
 
 .nav-links a::after {
@@ -101,7 +76,8 @@ header {
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    /* เปลี่ยน Gradient ของเส้นใต้ Nav Link */
+    background: linear-gradient(45deg, #007BFF, #5B9CFF); /* เปลี่ยนจากม่วงเป็นน้ำเงิน/ฟ้า */
     transition: width 0.3s ease;
 }
 
@@ -117,36 +93,39 @@ header {
 }
 
 .btn-primary {
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    /* เปลี่ยน Gradient ของปุ่ม Primary */
+    background: linear-gradient(45deg, #007BFF, #5B9CFF); /* เปลี่ยนจากม่วงเป็นน้ำเงิน/ฟ้า */
     color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    /* ปรับ Shadow ของปุ่ม Primary */
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3); /* เปลี่ยนจากม่วงเป็นน้ำเงิน */
     border: none;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    /* ปรับ Shadow ของปุ่ม Primary เมื่อ Hover */
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4); /* เปลี่ยนจากม่วงเป็นน้ำเงิน */
 }
 
 .btn-secondary {
     background: transparent;
-    color: #667eea;
-    border: 2px solid #667eea !important; /* Use !important to override Bootstrap's default */
+    color: #007BFF; /* ใช้สี Accent */
+    border: 2px solid #007BFF !important; /* ใช้สี Accent */
 }
 
 .btn-secondary:hover {
-    background: #667eea;
+    background: #007BFF; /* ใช้สี Accent */
     color: white;
 }
 
 .hero {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1); /* สามารถปรับเป็น rgba(167, 217, 240, 0.1) ได้ */
     backdrop-filter: blur(10px);
     border-radius: 20px;
     margin: 2rem 0;
     padding: 4rem 2rem;
     text-align: center;
-    color: white;
+    color: white; /* คงสีขาวไว้ */
     position: relative;
     overflow: hidden;
 }
@@ -158,7 +137,8 @@ header {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    /* ปรับ Radial Gradient ใน Hero section */
+    background: radial-gradient(circle, rgba(91, 156, 255, 0.1) 0%, transparent 70%); /* ใช้สีรอง #5B9CFF */
     animation: rotate 20s linear infinite;
 }
 
@@ -173,23 +153,27 @@ header {
 }
 
 .hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  /* เพิ่มหรือแก้ไขสีของ h1 ตรงนี้ */
+  color: #007bff; /* สีน้ำเงินเข้ม (Dark Navy Blue) เพื่อให้อ่านง่ายขึ้น */
 }
 
 .hero p {
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  /* เพิ่มหรือแก้ไขสีของ p ตรงนี้ */
+  color: #2D3A4B; /* สีน้ำเงินเข้มปานกลาง (Dark Slate Blue) เพื่อให้อ่านง่ายขึ้น */
 }
 
 .search-section {
-    background: white;
+    background: white; /* คงเดิมหรือเปลี่ยนเป็น #F8F8F8 เพื่อให้มีมิติ */
     border-radius: 15px;
     padding: 2rem;
     margin: 2rem 0;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* ปรับ shadow ให้เบาลง */
 }
 
 .search-input {
@@ -203,8 +187,9 @@ header {
 
 .search-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    color: #5B9CFF; /* เปลี่ยนเป็นสีรอง */
+    border-color: #5B9CFF; /* เปลี่ยนเป็นสีรอง */
+    box-shadow: 0 0 0 3px rgba(91, 156, 255, 0.1); /* เปลี่ยนเป็นสีรอง */
 }
 
 .filter-select {
@@ -217,7 +202,7 @@ header {
 }
 
 .filter-select:focus {
-    border-color: #667eea;
+    border-color: #5B9CFF; /* เปลี่ยนเป็นสีรอง */
     outline: none;
 }
 
@@ -229,16 +214,14 @@ header {
 }
 
 .course-card {
-    background: white;
+    background: white; /* คงเดิมหรือเปลี่ยนเป็น #F8F8F8 */
     border-radius: 15px;
     padding: 1.5rem;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08); /* ปรับ shadow ให้เบาลง */
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    /* Remove min-height here, we will rely on Bootstrap's align-items: stretch on Row */
-    /* min-height: 250px; */
     display: flex;
     flex-direction: column;
 }
@@ -250,12 +233,13 @@ header {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    /* เปลี่ยน Gradient ของเส้นบน Course Card */
+    background: linear-gradient(45deg, #007BFF, #5B9CFF); /* เปลี่ยนจากม่วงเป็นน้ำเงิน/ฟ้า */
 }
 
 .course-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12); /* ปรับ shadow ให้เบาลง */
 }
 
 /* ทำให้เนื้อหาใน Card Body ยืดเต็มพื้นที่ที่เหลือ และจัด content ให้เหมาะสม */
@@ -263,8 +247,6 @@ header {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    /* ใช้ justify-content: space-between เพื่อให้เนื้อหาหลักกระจายตัวเต็มพื้นที่ Card.Body */
-    /* และทำให้ส่วนท้ายสุด (preview) ถูกดันลงไปด้านล่างเสมอ */
     justify-content: space-between;
 }
 
@@ -272,12 +254,13 @@ header {
 .course-card .course-title,
 .course-card .course-instructor,
 .course-card .course-stats {
-    flex-shrink: 0; /* ป้องกันไม่ให้หดตัว */
+    flex-shrink: 0;
 }
 
 
 .course-code {
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    /* เปลี่ยน Gradient ของ Course Code */
+    background: linear-gradient(45deg, #007BFF, #5B9CFF); /* เปลี่ยนจากม่วงเป็นน้ำเงิน/ฟ้า */
     color: white;
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
@@ -286,7 +269,7 @@ header {
 }
 
 .rating .stars {
-    color: #ffd700;
+    color: #FFC107; /* สามารถใช้สีเหลืองทองแบบเดิมได้ */
     font-size: 1.2rem;
 }
 
@@ -295,18 +278,18 @@ header {
     color: #666;
     line-height: 1.5;
     display: -webkit-box;
-    -webkit-line-clamp: 3; /* กำหนดจำนวนบรรทัดที่ต้องการแสดง */
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: auto; /* ดันข้อความ Preview ไปอยู่ด้านล่างสุดของ Card Body */
+    margin-top: auto;
 }
 
 .sidebar {
-    background: white;
+    background: white; /* คงเดิมหรือเปลี่ยนเป็น #F8F8F8 */
     border-radius: 15px;
     padding: 1.5rem;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08); /* ปรับ shadow ให้เบาลง */
     height: fit-content;
     position: sticky;
     top: 100px;
@@ -320,7 +303,7 @@ header {
 }
 
 .trending-courses li:hover {
-    background: #f8f9ff;
+    background: #F0F8FF; /* ใช้สีหลักอ่อนๆ เมื่อ hover */
     border-radius: 8px;
     padding-left: 0.5rem;
 }
@@ -334,7 +317,8 @@ header {
     width: 100%;
     margin-bottom: 0.5rem;
     padding: 0.75rem;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    /* เปลี่ยน Gradient ของปุ่ม Action */
+    background: linear-gradient(45deg, #007BFF, #5B9CFF); /* เปลี่ยนจากม่วงเป็นน้ำเงิน/ฟ้า */
     color: white;
     text-decoration: none;
     border-radius: 8px;
@@ -345,7 +329,8 @@ header {
 
 .action-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    /* ปรับ Shadow ของปุ่ม Action เมื่อ Hover */
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3); /* เปลี่ยนจากม่วงเป็นน้ำเงิน */
 }
 
 .floating-add-btn {
@@ -354,7 +339,8 @@ header {
     right: 30px;
     width: 60px;
     height: 60px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    /* เปลี่ยน Gradient ของ Floating Button */
+    background: linear-gradient(45deg, #007BFF, #5B9CFF); /* เปลี่ยนจากม่วงเป็นน้ำเงิน/ฟ้า */
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -362,34 +348,22 @@ header {
     color: white;
     font-size: 1.5rem;
     cursor: pointer;
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    /* ปรับ Shadow ของ Floating Button */
+    box-shadow: 0 5px 20px rgba(0, 123, 255, 0.4); /* เปลี่ยนจากม่วงเป็นน้ำเงิน */
     transition: all 0.3s ease;
 }
 
 .floating-add-btn:hover {
     transform: scale(1.1);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    /* ปรับ Shadow ของ Floating Button เมื่อ Hover */
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.5); /* เปลี่ยนจากม่วงเป็นน้ำเงิน */
 }
 
 /* Media queries */
 @media (max-width: 768px) {
-    .nav-links {
-        display: none;
-    }
-
-    .hero h1 {
-        font-size: 2rem;
-    }
-
-    .main-content {
-        grid-template-columns: 1fr;
-    }
-
-    .search-container {
-        flex-direction: column;
-    }
-
-    .search-filters {
-        justify-content: center;
-    }
+    .nav-links { display: none; }
+    .hero h1 { font-size: 2rem; }
+    .main-content { grid-template-columns: 1fr; }
+    .search-container { flex-direction: column; }
+    .search-filters { justify-content: center; }
 }
