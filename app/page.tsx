@@ -2,12 +2,12 @@
 'use client';
 
 import Head from 'next/head';
+import Link from 'next/link'; // <--- เพิ่มบรรทัดนี้
 import { Navbar, Nav, Button, Container, Row, Col, Form, InputGroup, Card } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 
 // Define interfaces for component props to ensure type safety in TypeScript
-
 interface RawReviewData {
   rating_overall: number;
 }
@@ -25,6 +25,7 @@ interface RawCourseData {
   reviews?: RawReviewData[];
 }
 
+
 interface Course {
   id: string;
   university_name: string;
@@ -34,7 +35,7 @@ interface Course {
   credits: number;
   instructor: string;
   rating: number;
-  reviews: number;
+  reviews: number; // จำนวนรีวิว
   preview: string;
 }
 
@@ -59,7 +60,7 @@ export default function Home() {
         .from('courses')
         .select('*, reviews(rating_overall)');
 
-      if (error && error.message) { 
+      if (error && error.message) {
         console.error('Error fetching courses:', error);
         setError('ไม่สามารถโหลดวิชาเรียนได้: ' + error.message);
       } else {
@@ -67,7 +68,6 @@ export default function Home() {
           const reviewsCount = item.reviews ? item.reviews.length : 0;
           let averageRating = 0;
           if (reviewsCount > 0) {
-            // แก้ไขตรงนี้: ใช้ (item.reviews || []) เพื่อให้แน่ใจว่าเป็น Array ก่อนเรียก reduce
             const totalRating = (item.reviews || []).reduce((sum: number, review: RawReviewData) => sum + (review.rating_overall || 0), 0);
             averageRating = totalRating / reviewsCount;
           }
@@ -95,16 +95,15 @@ export default function Home() {
         .from('courses')
         .select('id, course_name, reviews(rating_overall)');
 
-      if (error && error.message) { 
+      if (error && error.message) {
         console.error('Error fetching trending courses:', error);
       } else {
-        console.log("Fetched Trending Courses Raw Data:", data); 
-        
+        console.log("Fetched Trending Courses Raw Data:", data);
+
         const fetchedTrendingCourses: TrendingCourse[] = (data as RawCourseData[] || []).map((item: RawCourseData) => {
           const reviewsCount = item.reviews ? item.reviews.length : 0;
           let averageRating = 0;
           if (reviewsCount > 0) {
-            // แก้ไขตรงนี้: ใช้ (item.reviews || []) เพื่อให้แน่ใจว่าเป็น Array ก่อนเรียก reduce
             const totalRating = (item.reviews || []).reduce((sum: number, review: RawReviewData) => sum + (review.rating_overall || 0), 0);
             averageRating = totalRating / reviewsCount;
           }
@@ -118,7 +117,7 @@ export default function Home() {
         }).sort((a, b) => b.reviews - a.reviews)
           .slice(0, 5);
 
-        console.log("Processed Trending Courses Data:", fetchedTrendingCourses); 
+        console.log("Processed Trending Courses Data:", fetchedTrendingCourses);
         setTrendingCourses(fetchedTrendingCourses);
       }
     }
@@ -254,7 +253,10 @@ export default function Home() {
 
             <div className="quick-actions mt-4">
               <h3>🚀 มีส่วนร่วมเลย!</h3>
-              <Button variant="primary" className="action-btn mb-2">เขียนรีวิว</Button>
+              {/* ลบ passHref และ legacyBehavior ออก */}
+              <Link href="/review">
+                <Button variant="primary" className="action-btn mb-2">เขียนรีวิว</Button>
+              </Link>
               <Button variant="primary" className="action-btn mb-2">ดูประวัติการรีวิว</Button>
               <Button variant="primary" className="action-btn">บันทึกวิชาที่สนใจ</Button>
             </div>
