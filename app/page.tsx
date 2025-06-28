@@ -7,18 +7,34 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 
 // Define interfaces for component props to ensure type safety in TypeScript
-interface Course {
-  id: string; // คอลัมน์ id สำหรับ key
+
+interface RawReviewData {
+  rating_overall: number;
+}
+
+interface RawCourseData {
+  id: string;
   university_name: string;
   course_code: string;
   course_name: string;
   faculty: string;
   credits: number;
-  // คอลัมน์ด้านล่างนี้จะถูกคำนวณหรือดึงจาก reviews
+  instructor?: string | null;
+  students?: number | null;
+  preview?: string | null;
+  reviews?: RawReviewData[];
+}
+
+interface Course {
+  id: string;
+  university_name: string;
+  course_code: string;
+  course_name: string;
+  faculty: string;
+  credits: number;
   instructor: string;
-  rating: number; // คะแนนเฉลี่ยจาก reviews
-  reviews: number; // จำนวนรีวิว
-  // ลบ students: number; ออกไป
+  rating: number;
+  reviews: number;
   preview: string;
 }
 
@@ -47,12 +63,12 @@ export default function Home() {
         console.error('Error fetching courses:', error);
         setError('ไม่สามารถโหลดวิชาเรียนได้: ' + error.message);
       } else {
-        // เพิ่มการตรวจสอบ data ให้เป็น Array ว่างเปล่าหากเป็น null
-        const fetchedCourses: Course[] = (data || []).map((item: any) => {
+        const fetchedCourses: Course[] = (data as RawCourseData[] || []).map((item: RawCourseData) => {
           const reviewsCount = item.reviews ? item.reviews.length : 0;
           let averageRating = 0;
           if (reviewsCount > 0) {
-            const totalRating = item.reviews.reduce((sum: number, review: any) => sum + (review.rating_overall || 0), 0);
+            // แก้ไขตรงนี้: ใช้ (item.reviews || []) เพื่อให้แน่ใจว่าเป็น Array ก่อนเรียก reduce
+            const totalRating = (item.reviews || []).reduce((sum: number, review: RawReviewData) => sum + (review.rating_overall || 0), 0);
             averageRating = totalRating / reviewsCount;
           }
 
@@ -84,12 +100,12 @@ export default function Home() {
       } else {
         console.log("Fetched Trending Courses Raw Data:", data); 
         
-        // เพิ่มการตรวจสอบ data ให้เป็น Array ว่างเปล่าหากเป็น null ก่อนเรียกใช้ .map()
-        const fetchedTrendingCourses: TrendingCourse[] = (data || []).map((item: any) => {
+        const fetchedTrendingCourses: TrendingCourse[] = (data as RawCourseData[] || []).map((item: RawCourseData) => {
           const reviewsCount = item.reviews ? item.reviews.length : 0;
           let averageRating = 0;
           if (reviewsCount > 0) {
-            const totalRating = item.reviews.reduce((sum: number, review: any) => sum + (review.rating_overall || 0), 0);
+            // แก้ไขตรงนี้: ใช้ (item.reviews || []) เพื่อให้แน่ใจว่าเป็น Array ก่อนเรียก reduce
+            const totalRating = (item.reviews || []).reduce((sum: number, review: RawReviewData) => sum + (review.rating_overall || 0), 0);
             averageRating = totalRating / reviewsCount;
           }
 
