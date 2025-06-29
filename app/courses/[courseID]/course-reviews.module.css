@@ -1,0 +1,368 @@
+/* app/courses/[courseId]/course-reviews.module.css */
+
+/* สีที่ใช้ในเว็บไซต์ (จาก globals.css) */
+/* 60% - #F0F8FF (Alice Blue) - สีหลัก พื้นหลัง */
+/* 30% - #5B9CFF (Medium Blue) - สีรอง ส่วนประกอบหลัก */
+/* 10% - #007BFF (Vibrant Blue) - สีเน้น ปุ่ม, ไฮไลท์ */
+/* Text colors: #0A2342, #2D3A4B */
+
+.bodyBackground {
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    background: linear-gradient(135deg, #F0F8FF 0%, #E0F2FF 100%); /* พื้นหลังตามโทนสีใหม่ */
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); /* ปรับ shadow */
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #007BFF, #5B9CFF); /* สี Gradient ตามโทนใหม่ */
+    color: white;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.backBtn { /* ใช้ className จาก CSS module */
+    display: inline-flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.backBtn:hover {
+    color: white;
+    transform: translateX(-5px);
+}
+
+.courseInfo {
+    position: relative;
+    z-index: 2;
+}
+
+.courseCode {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.courseTitle {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.courseStats {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ratingDisplay {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stars {
+    color: #fbbf24; /* สีดาวทอง */
+    font-size: 18px;
+}
+
+.content {
+    padding: 30px;
+}
+
+.filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.filterBtn {
+    padding: 10px 20px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.filterBtn:hover,
+.filterBtn.active {
+    background: #5B9CFF; /* สีรอง */
+    color: white;
+    border-color: #5B9CFF; /* สีรอง */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(91, 156, 255, 0.3); /* Shadow สีรอง */
+}
+
+.reviewsSection {
+    display: grid;
+    gap: 20px;
+}
+
+.reviewCard {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* ปรับ shadow */
+    border: 1px solid rgba(0, 123, 255, 0.1); /* สีน้ำเงินอ่อน */
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.reviewCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #007BFF, #5B9CFF); /* สี Gradient ตามโทนใหม่ */
+}
+
+.reviewCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12); /* ปรับ shadow */
+}
+
+.reviewHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.reviewerInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007BFF, #5B9CFF); /* สี Gradient ตามโทนใหม่ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.reviewerDetails h4 {
+    color: #0A2342; /* สีข้อความเข้ม */
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.reviewerDetails .meta {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.reviewRating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.reviewRating .stars {
+    color: #fbbf24; /* สีดาวทอง */
+    font-size: 18px;
+}
+
+.reviewContent {
+    margin-bottom: 20px;
+}
+
+.reviewText {
+    color: #2D3A4B; /* สีข้อความเข้มปานกลาง */
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.reviewCategories {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.categoryTag {
+    background: rgba(0, 123, 255, 0.1); /* สี Accent อ่อนๆ */
+    color: #007BFF; /* สี Accent */
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.reviewMetrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.metric {
+    text-align: center;
+    padding: 15px;
+    background: #F8FCFF; /* สีขาวอมฟ้าอ่อน */
+    border-radius: 12px;
+}
+
+.metricValue {
+    font-size: 24px;
+    font-weight: 700;
+    color: #5B9CFF; /* สีรอง */
+    margin-bottom: 5px;
+}
+
+.metricLabel {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.reviewActions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid #e0f0ff; /* สีฟ้าอ่อน */
+}
+
+.helpfulSection {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.helpfulBtn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid #e5e7eb;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+}
+
+.helpfulBtn:hover,
+.helpfulBtn:disabled { /* เพิ่ม disabled style */
+    background: #5B9CFF; /* สีรอง */
+    color: white;
+    border-color: #5B9CFF; /* สีรอง */
+}
+
+.addReviewBtn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: linear-gradient(135deg, #007BFF, #5B9CFF); /* สี Gradient ตามโทนใหม่ */
+    color: white;
+    border: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0, 123, 255, 0.3); /* Shadow สี Accent */
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex; /* เพื่อจัดให้อยู่ตรงกลาง */
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; /* สำหรับ Link */
+}
+
+.addReviewBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 15px 35px rgba(0, 123, 255, 0.4); /* Shadow สี Accent */
+}
+
+.loadMore {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.loadMoreBtn {
+    background: linear-gradient(135deg, #007BFF, #5B9CFF); /* สี Gradient ตามโทนใหม่ */
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.loadMoreBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 123, 255, 0.3); /* Shadow สี Accent */
+}
+
+@media (max-width: 768px) {
+    .courseStats {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    .reviewHeader {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .reviewMetrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

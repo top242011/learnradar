@@ -2,7 +2,7 @@
 'use client';
 
 import Head from 'next/head';
-import Link from 'next/link'; // <--- เพิ่มบรรทัดนี้
+import Link from 'next/link'; // <--- ตรวจสอบให้แน่ใจว่า import Link ถูกต้อง
 import { Navbar, Nav, Button, Container, Row, Col, Form, InputGroup, Card } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
@@ -127,37 +127,42 @@ export default function Home() {
   }, []);
 
   // CourseCard Component: Displays individual course information
-  const CourseCard = ({ course_code, course_name, instructor, rating, reviews, credits, preview, university_name, faculty }: Omit<Course, 'students'>) => (
-    <Card className="course-card h-100">
-      <Card.Body>
-        <div className="d-flex justify-content-between align-items-start mb-3">
-          <span className="course-code">{course_code}</span>
-          <div className="rating d-flex align-items-center">
-            <span className="stars">{'★'.repeat(Math.floor(rating))}</span>
-            <span className="ms-1">{rating}</span>
+  // เปลี่ยน CourseCard ให้สามารถคลิกได้
+  const CourseCard = ({ id, course_code, course_name, instructor, rating, reviews, credits, preview, university_name, faculty }: Course) => (
+    <Link href={`/courses/${id}`} passHref> {/* เพิ่ม Link เพื่อนำทางไปยังหน้า Review Details */}
+      <Card className="course-card h-100">
+        <Card.Body>
+          <div className="d-flex justify-content-between align-items-start mb-3">
+            <span className="course-code">{course_code}</span>
+            <div className="rating d-flex align-items-center">
+              <span className="stars">{'★'.repeat(Math.floor(rating))}</span>
+              <span className="ms-1">{rating}</span>
+            </div>
           </div>
-        </div>
-        <Card.Title className="course-title">{course_name}</Card.Title>
-        <Card.Subtitle className="mb-2 text-muted course-instructor">{instructor}</Card.Subtitle>
-        <div className="d-flex justify-content-between mb-3 font-size-small course-stats">
-          <span className="stat-item">📚 {reviews} รีวิว</span>
-          <span className="stat-item">⏱️ {credits} หน่วยกิต</span>
-        </div>
-        <Card.Text className="course-preview">{preview}</Card.Text>
-        <div className="d-flex justify-content-between font-size-small text-muted mt-2">
-            <span>{university_name}</span>
-            <span>{faculty}</span>
-        </div>
-      </Card.Body>
-    </Card>
+          <Card.Title className="course-title">{course_name}</Card.Title>
+          <Card.Subtitle className="mb-2 text-muted course-instructor">{instructor}</Card.Subtitle>
+          <div className="d-flex justify-content-between mb-3 font-size-small course-stats">
+            <span className="stat-item">📚 {reviews} รีวิว</span>
+            <span className="stat-item">⏱️ {credits} หน่วยกิต</span>
+          </div>
+          <Card.Text className="course-preview">{preview}</Card.Text>
+          <div className="d-flex justify-content-between font-size-small text-muted mt-2">
+              <span>{university_name}</span>
+              <span>{faculty}</span>
+          </div>
+        </Card.Body>
+      </Card>
+    </Link>
   );
 
   // TrendingCourseItem Component: Displays popular courses in the sidebar
-  const TrendingCourseItem = ({ title, rating, reviews }: TrendingCourse) => (
-    <li>
-      <div className="trending-title">{title}</div>
-      <div className="trending-stats">★{rating} • {reviews} รีวิว</div>
-    </li>
+  const TrendingCourseItem = ({ id, title, rating, reviews }: TrendingCourse) => (
+    <Link href={`/courses/${id}`} passHref> {/* เพิ่ม Link เพื่อนำทางไปยังหน้า Review Details */}
+      <li>
+        <div className="trending-title">{title}</div>
+        <div className="trending-stats">★{rating} • {reviews} รีวิว</div>
+      </li>
+    </Link>
   );
 
   return (
@@ -253,7 +258,6 @@ export default function Home() {
 
             <div className="quick-actions mt-4">
               <h3>🚀 มีส่วนร่วมเลย!</h3>
-              {/* ลบ passHref และ legacyBehavior ออก */}
               <Link href="/review">
                 <Button variant="primary" className="action-btn mb-2">เขียนรีวิว</Button>
               </Link>
