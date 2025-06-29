@@ -145,7 +145,7 @@ export default function ReviewFormPage() {
                 rating_teaching: formData.ratingTeaching || null,
                 rating_homework: formData.ratingHomework || null,
                 tags: formData.tags.length > 0 ? formData.tags : null,
-                content: formData.mainReview, // <-- แก้ไขตรงนี้: เปลี่ยน main_review_content เป็น content
+                content: formData.mainReview,
                 tips_review_content: formData.tipsReview || null,
                 is_anonymous: formData.isAnonymous,
             };
@@ -190,10 +190,14 @@ export default function ReviewFormPage() {
             // Redirect กลับหน้าหลักหลังจากส่งสำเร็จ
             router.push('/');
 
-        } catch (error: any) {
+        } catch (error: unknown) { // แก้ไข 'any' เป็น 'unknown'
             console.error('Submission failed:', error);
-            setSubmissionMessage('เกิดข้อผิดพลาดในการส่งรีวิว: ' + error.message);
-            alert('เกิดข้อผิดพลาดในการส่งรีวิว: ' + error.message);
+            let errorMessage = 'เกิดข้อผิดพลาดในการส่งรีวิว';
+            if (error instanceof Error) {
+                errorMessage += ': ' + error.message;
+            }
+            setSubmissionMessage(errorMessage);
+            alert(errorMessage);
         } finally {
             setIsSubmitting(false);
         }

@@ -13,10 +13,11 @@ interface CourseData {
   id: string;
   course_code: string;
   course_name: string;
-  university_name: string; // อาจต้องเพิ่มใน DB หากยังไม่มี
-  faculty: string;         // อาจต้องเพิ่มใน DB หากยังไม่มี
-  credits: number;         // อาจต้องเพิ่มใน DB หากยังไม่มี
-  instructor: string;      // อาจต้องเพิ่มใน DB หากยังไม่มี
+  university_name: string | null;
+  faculty: string | null;
+  credits: number | null;
+  instructor: string | null;
+  preview: string | null;
 }
 
 interface ReviewData {
@@ -28,18 +29,21 @@ interface ReviewData {
   rating_teaching: number | null;
   rating_homework: number | null;
   tags: string[] | null;
-  content: string; // เปลี่ยนจาก main_review_content เป็น content
+  content: string;
   tips_review_content: string | null;
   is_anonymous: boolean;
-  created_at: string; // เพิ่ม created_at
+  created_at: string;
 }
 
 // ย้ายฟังก์ชัน formatDate และ calculateDaysAgo ออกมานอก Component
 // เพื่อให้สามารถเรียกใช้ได้ทั้งใน ReviewCard และ CourseReviewsPage
-const formatDate = (dateString: string) => {
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('th-TH', options);
-};
+// formatDate ไม่ได้ใช้ใน CourseReviewsPage โดยตรงแล้ว จึงสามารถลบออกได้หากไม่ต้องการ
+// หรือเก็บไว้หากมีแผนจะใช้ในอนาคต
+
+// const formatDate = (dateString: string) => { // คอมเมนต์หรือลบออกหากไม่ใช้งานนอก ReviewCard
+//   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+//   return new Date(dateString).toLocaleDateString('th-TH', options);
+// };
 
 const calculateDaysAgo = (dateString: string) => {
   const reviewDate = new Date(dateString);
@@ -85,12 +89,26 @@ const ReviewCard = ({ review }: { review: ReviewData }) => {
     return labels[type][rating - 1] || 'ไม่ระบุ';
   };
 
+  const getAvatarChar = (dateString: string, isAnonymous: boolean) => {
+    if (isAnonymous) return 'A';
+    // สามารถใช้ logic ที่ซับซ้อนกว่านี้ได้ หากมีชื่อผู้ใช้ใน DB
+    // ตอนนี้ใช้ตัวอักษรแรกจาก created_at ซึ่งอาจจะไม่เหมาะสมนัก แต่ก็ผ่าน Type check
+    return dateString ? dateString[0].toUpperCase() : 'U';
+  };
+
+  // formatDate for meta info in ReviewCard
+  const formatReviewDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('th-TH', options);
+  };
+
+
   return (
     <div className={styles.reviewCard}>
       <div className={styles.reviewHeader}>
         <div className={styles.reviewerInfo}>
           <div className={styles.avatar}>
-            {review.is_anonymous ? 'A' : (review.created_at ? review.created_at[0].toUpperCase() : 'U')}
+            {getAvatarChar(review.created_at, review.is_anonymous)}
           </div>
           <div className={styles.reviewerDetails}>
             {/* แก้ไขการแสดงชื่อนักศึกษาให้ถูกต้องเมื่อไม่ระบุชื่อ */}
@@ -138,7 +156,6 @@ const ReviewCard = ({ review }: { review: ReviewData }) => {
             <div className={styles.metricValue}>{review.rating_homework?.toFixed(1) || 'N/A'}</div>
             <div className={styles.metricLabel}>ปริมาณการบ้าน ({getRatingText(review.rating_homework, 'homework')})</div>
           </div>
-          {/* คุณสามารถเพิ่ม metric อื่นๆ ได้ตามต้องการ เช่น ประโยชน์, ความน่าสนใจ */}
         </div>
       </div>
 
@@ -173,6 +190,7 @@ export default function CourseReviewsPage() {
     async function fetchData() {
       setLoading(true);
       setError(null);
+      console.log('Fetching data for courseId:', courseId);
 
       try {
         // ดึงข้อมูลวิชา
@@ -180,22 +198,32 @@ export default function CourseReviewsPage() {
           .from('courses')
           .select('*')
           .eq('id', courseId)
-          .single(); // ใช้ .single() เพราะคาดหวังผลลัพธ์เดียว
+          .single();
+
+        console.log('Supabase Course Data:', courseData);
+        console.log('Supabase Course Error:', courseError);
 
         if (courseError) {
+          if (courseError.code === 'PGRST116') {
+            throw new Error('ไม่พบข้อมูลวิชานี้ (Course ID ไม่ถูกต้องหรือไม่มีข้อมูล)');
+          }
           throw new Error('Error fetching course info: ' + courseError.message);
         }
+        
         if (!courseData) {
-            throw new Error('Course not found.');
+            throw new Error('ไม่พบข้อมูลวิชานี้ (Course data is null)');
         }
         setCourse(courseData as CourseData);
 
         // ดึงข้อมูลรีวิวทั้งหมดสำหรับวิชานี้
         const { data: reviewsData, error: reviewsError } = await supabase
           .from('reviews')
-          .select('*') // ดึงทุกคอลัมน์จากตาราง reviews
+          .select('*')
           .eq('course_id', courseId)
-          .order('created_at', { ascending: false }); // เรียงตามเวลาล่าสุด
+          .order('created_at', { ascending: false });
+
+        console.log('Supabase Reviews Data:', reviewsData);
+        console.log('Supabase Reviews Error:', reviewsError);
 
         if (reviewsError) {
           throw new Error('Error fetching reviews: ' + reviewsError.message);
@@ -214,9 +242,13 @@ export default function CourseReviewsPage() {
           setTotalReviews(0);
         }
 
-      } catch (err: any) {
-        console.error('Failed to fetch data:', err);
-        setError(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูล');
+      } catch (err: unknown) { // แก้ไข 'any' เป็น 'unknown'
+        console.error('Submission failed in fetchData:', err);
+        if (err instanceof Error) { // ตรวจสอบว่าเป็น Error instance
+          setError(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูล');
+        } else {
+          setError('เกิดข้อผิดพลาดที่ไม่รู้จักในการโหลดข้อมูล');
+        }
       } finally {
         setLoading(false);
       }
@@ -224,8 +256,11 @@ export default function CourseReviewsPage() {
 
     if (courseId) {
       fetchData();
+    } else {
+      setLoading(false);
+      setError('ไม่พบรหัสวิชาใน URL');
     }
-  }, [courseId]); // ให้ useEffect ทำงานใหม่เมื่อ courseId เปลี่ยน
+  }, [courseId]);
 
   if (loading) {
     return (
@@ -262,16 +297,16 @@ export default function CourseReviewsPage() {
   return (
     <div className={styles.bodyBackground}>
       <Head>
-        <title>{course.course_name} - รีวิว</title>
-        <meta name="description" content={`รีวิววิชา ${course.course_name}`} />
+        <title>{course.course_name || 'วิชา'} - รีวิว</title>
+        <meta name="description" content={`รีวิววิชา ${course.course_name || ''}`} />
       </Head>
 
       <div className={styles.container}>
         <div className={styles.header}>
           <Link href="/" className={styles.backBtn}>← กลับไปหน้าหลัก</Link>
           <div className={styles.courseInfo}>
-            <div className={styles.courseCode}>{course.course_code}</div>
-            <h1 className={styles.courseTitle}>{course.course_name}</h1>
+            <div className={styles.courseCode}>{course.course_code || 'N/A'}</div>
+            <h1 className={styles.courseTitle}>{course.course_name || 'ไม่ระบุชื่อวิชา'}</h1>
             <div className={styles.courseStats}>
               <div className={styles.statItem}>
                 <div className={styles.ratingDisplay}>
@@ -282,19 +317,35 @@ export default function CourseReviewsPage() {
               <div className={styles.statItem}>
                 <span>📝 {totalReviews} รีวิว</span>
               </div>
-              {/* <div className={styles.statItem}>
-                <span>👥 {course.students || 0} คนเรียน</span>
-              </div> */}
               <div className={styles.statItem}>
-                <span>⏱️ อัปเดตล่าสุด: {reviews.length > 0 ? calculateDaysAgo(reviews[0].created_at) : 'ไม่มีรีวิว'}</span>
+                <span>⏱️ อัปเดตล่าสุด: {reviews.length > 0 && reviews[0].created_at ? calculateDaysAgo(reviews[0].created_at) : 'ไม่มีรีวิว'}</span>
               </div>
+              {course.instructor && (
+                <div className={styles.statItem}>
+                    <span>👨‍🏫 {course.instructor}</span>
+                </div>
+              )}
+              {course.faculty && (
+                <div className={styles.statItem}>
+                    <span>🏛️ {course.faculty}</span>
+                </div>
+              )}
+              {course.university_name && (
+                <div className={styles.statItem}>
+                    <span>🏫 {course.university_name}</span>
+                </div>
+              )}
+              {course.credits !== null && course.credits !== undefined && (
+                <div className={styles.statItem}>
+                    <span>⏱️ {course.credits} หน่วยกิต</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         <div className={styles.content}>
           <div className={styles.filters}>
-            {/* Filter buttons - สามารถเพิ่ม Logic สำหรับ Filter ได้ในอนาคต */}
             <button className={`${styles.filterBtn} ${styles.active}`}>ทั้งหมด</button>
             <button className={styles.filterBtn}>ล่าสุด</button>
             <button className={styles.filterBtn}>คะแนนสูง</button>
@@ -314,7 +365,6 @@ export default function CourseReviewsPage() {
             )}
           </div>
 
-          {/* Load More button - สามารถเพิ่ม Logic สำหรับ Pagination ได้ในอนาคต */}
           {reviews.length > 0 && (
             <div className={styles.loadMore}>
               <button className={styles.loadMoreBtn}>โหลดรีวิวเพิ่มเติม</button>
@@ -323,7 +373,6 @@ export default function CourseReviewsPage() {
         </div>
       </div>
 
-      {/* Floating Add Review Button - สามารถเปลี่ยน Link ไปหน้าเขียนรีวิว */}
       <Link href="/review" className={styles.addReviewBtn} title="เขียนรีวิว">
         +
       </Link>
