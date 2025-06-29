@@ -4,9 +4,9 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useParams } from 'next/navigation'; // นำเข้า useParams เพื่อดึง courseId
-import { supabase } from '../../../utils/supabaseClient'; // ปรับเส้นทางให้ถูกต้อง
-import styles from './course-reviews.module.css'; // นำเข้า CSS Module
+import { useParams } from 'next/navigation';
+import { supabase } from '../../../utils/supabaseClient';
+import styles from './course-reviews.module.css';
 
 // Interfaces สำหรับข้อมูลที่ดึงมาจาก Supabase
 interface CourseData {
@@ -35,12 +35,7 @@ interface ReviewData {
   created_at: string;
 }
 
-// ย้ายฟังก์ชัน formatDate และ calculateDaysAgo ออกมานอก Component
-const formatDate = (dateString: string) => {
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('th-TH', options);
-};
-
+// ย้ายฟังก์ชัน calculateDaysAgo ออกมานอก Component
 const calculateDaysAgo = (dateString: string) => {
   const reviewDate = new Date(dateString);
   const now = new Date();
@@ -57,9 +52,9 @@ const calculateDaysAgo = (dateString: string) => {
 
 // ReviewCard Component
 const ReviewCard = ({ review }: { review: ReviewData }) => {
-  const [helpfulCount, setHelpfulCount] = useState(24); // Mock data for helpful count
-  const [notHelpfulCount, setNotHelpfulCount] = useState(2); // Mock data for not helpful count
-  const [voted, setVoted] = useState(false); // State to prevent multiple votes
+  const [helpfulCount, setHelpfulCount] = useState(24);
+  const [notHelpfulCount, setNotHelpfulCount] = useState(2);
+  const [voted, setVoted] = useState(false);
 
   const handleHelpfulClick = () => {
     if (!voted) {
@@ -87,17 +82,8 @@ const ReviewCard = ({ review }: { review: ReviewData }) => {
 
   const getAvatarChar = (dateString: string, isAnonymous: boolean) => {
     if (isAnonymous) return 'A';
-    // สามารถใช้ logic ที่ซับซ้อนกว่านี้ได้ หากมีชื่อผู้ใช้ใน DB
-    // ตอนนี้ใช้ตัวอักษรแรกจาก created_at ซึ่งอาจจะไม่เหมาะสมนัก แต่ก็ผ่าน Type check
     return dateString ? dateString[0].toUpperCase() : 'U';
   };
-
-  // ลบ formatReviewDate ออกไป เนื่องจากไม่ได้ใช้งานแล้ว
-  // const formatReviewDate = (dateString: string) => {
-  //   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-  //   return new Date(dateString).toLocaleDateString('th-TH', options);
-  // };
-
 
   return (
     <div className={styles.reviewCard}>
@@ -173,7 +159,7 @@ const ReviewCard = ({ review }: { review: ReviewData }) => {
 
 export default function CourseReviewsPage() {
   const params = useParams();
-  const courseId = params.courseId as string; // ดึง courseId จาก URL
+  const courseId = params.courseId as string;
   const [course, setCourse] = useState<CourseData | null>(null);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -188,7 +174,6 @@ export default function CourseReviewsPage() {
       console.log('Fetching data for courseId:', courseId);
 
       try {
-        // ดึงข้อมูลวิชา
         const { data: courseData, error: courseError } = await supabase
           .from('courses')
           .select('*')
@@ -210,7 +195,6 @@ export default function CourseReviewsPage() {
         }
         setCourse(courseData as CourseData);
 
-        // ดึงข้อมูลรีวิวทั้งหมดสำหรับวิชานี้
         const { data: reviewsData, error: reviewsError } = await supabase
           .from('reviews')
           .select('*')
@@ -227,7 +211,6 @@ export default function CourseReviewsPage() {
         const fetchedReviews = reviewsData as ReviewData[];
         setReviews(fetchedReviews);
 
-        // คำนวณคะแนนเฉลี่ยและจำนวนรีวิวรวม
         if (fetchedReviews.length > 0) {
           const sumRating = fetchedReviews.reduce((sum, r) => sum + r.rating_overall, 0);
           setAverageRating(parseFloat((sumRating / fetchedReviews.length).toFixed(1)));
@@ -237,8 +220,8 @@ export default function CourseReviewsPage() {
           setTotalReviews(0);
         }
 
-      } catch (err: unknown) { // แก้ไข 'any' เป็น 'unknown'
-        console.error('Submission failed in fetchData:', err);
+      } catch (err: unknown) {
+        console.error('Failed to fetch data:', err);
         if (err instanceof Error) {
           setError(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูล');
         } else {

@@ -4,13 +4,13 @@
 import { useState, useEffect, ChangeEvent, FormEvent, MouseEvent } from 'react';
 import Head from 'next/head';
 import styles from './review-form.module.css'; // นำเข้า CSS Module
-import { supabase } from '../../utils/supabaseClient'; // <--- ยืนยันว่าแก้ไขเส้นทางตรงนี้เป็น '../../'
-import { useRouter } from 'next/navigation'; // นำเข้า useRouter สำหรับ Redirect
+import { supabase } from '../../utils/supabaseClient';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // นำเข้า Link
 
 export default function ReviewFormPage() {
-    const router = useRouter(); // Initialize router
+    const router = useRouter();
 
-    // State สำหรับข้อมูลฟอร์ม
     const [formData, setFormData] = useState({
         courseCode: '',
         term: '',
@@ -29,7 +29,6 @@ export default function ReviewFormPage() {
         isAnonymous: false,
     });
 
-    // State สำหรับข้อความให้คะแนน
     const [ratingTexts, setRatingTexts] = useState({
         overall: 'ยังไม่ได้เลือก',
         difficulty: 'ง่ายมาก - ยากมาก',
@@ -37,13 +36,11 @@ export default function ReviewFormPage() {
         homework: 'น้อยมาก - เยอะมาก',
     });
 
-    // State สำหรับตัวนับตัวอักษร
     const [mainReviewCount, setMainReviewCount] = useState('0/1000');
     const [tipsReviewCount, setTipsReviewCount] = useState('0/500');
-    const [isSubmitting, setIsSubmitting] = useState(false); // State เพื่อจัดการตอนกำลังส่งข้อมูล
-    const [submissionMessage, setSubmissionMessage] = useState<string | null>(null); // State สำหรับข้อความแจ้งผู้ใช้
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submissionMessage, setSubmissionMessage] = useState<string | null>(null);
 
-    // ฟังก์ชันจัดการการเปลี่ยนแปลง Input
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement;
         setFormData(prev => ({
@@ -52,7 +49,6 @@ export default function ReviewFormPage() {
         }));
     };
 
-    // ฟังก์ชันจัดการ Star Rating
     const handleStarClick = (type: keyof typeof ratingTexts, value: number) => {
         setFormData(prev => ({ ...prev, [`rating${type.charAt(0).toUpperCase() + type.slice(1)}`]: value }));
         const labels: { [key: string]: string[] } = {
@@ -66,7 +62,6 @@ export default function ReviewFormPage() {
         }
     };
 
-    // ฟังก์ชันจัดการ Tag Checkbox
     const handleTagChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { value, checked } = e.target;
         setFormData(prev => {
@@ -77,23 +72,19 @@ export default function ReviewFormPage() {
         });
     };
 
-    // Effect สำหรับ Character Counter
     useEffect(() => {
         setMainReviewCount(`${formData.mainReview.length}/1000`);
         setTipsReviewCount(`${formData.tipsReview.length}/500`);
     }, [formData.mainReview, formData.tipsReview]);
 
-    // ฟังก์ชันจัดการการส่งฟอร์ม
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
         setSubmissionMessage(null);
 
         try {
-            // 1. ค้นหา course_id หรือสร้าง course ใหม่
             let courseId: string | null = null;
             
-            // ค้นหาคอร์สที่มีอยู่
             const { data: existingCourses, error: courseFetchError } = await supabase
                 .from('courses')
                 .select('id')
@@ -108,8 +99,6 @@ export default function ReviewFormPage() {
             if (existingCourses && existingCourses.length > 0) {
                 courseId = existingCourses[0].id;
             } else {
-                // ถ้าไม่พบ course ให้สร้าง course ใหม่
-                // อ้างอิงจากภาพ Supabase ของคุณ มีแค่ course_code, course_name, instructor, faculty, credits
                 const { data: newCourse, error: newCourseError } = await supabase
                     .from('courses')
                     .insert([
@@ -117,12 +106,11 @@ export default function ReviewFormPage() {
                             course_code: formData.courseCode,
                             course_name: formData.courseName,
                             instructor: formData.instructor,
-                            // เพิ่มคอลัมน์ที่มีในตาราง courses ของคุณจากฟอร์ม
-                            faculty: 'ไม่ระบุ', // คอลัมน์ faculty มีใน DB แต่ในฟอร์มไม่มี input โดยตรง, ให้ค่าเริ่มต้นไปก่อน
-                            credits: 0, // คอลัมน์ credits มีใน DB แต่ในฟอร์มไม่มี input โดยตรง, ให้ค่าเริ่มต้นไปก่อน
+                            faculty: 'ไม่ระบุ',
+                            credits: 0,
                         }
                     ])
-                    .select('id'); // ดึง ID ของ record ที่เพิ่งสร้าง
+                    .select('id');
 
                 if (newCourseError) {
                     throw new Error('Error creating new course: ' + newCourseError.message);
@@ -134,7 +122,6 @@ export default function ReviewFormPage() {
                 throw new Error('Could not determine course ID.');
             }
 
-            // 2. เตรียมข้อมูลสำหรับ insert ลงตาราง reviews
             const reviewData = {
                 course_id: courseId,
                 term: formData.term,
@@ -149,7 +136,6 @@ export default function ReviewFormPage() {
                 is_anonymous: formData.isAnonymous,
             };
 
-            // 3. Insert ข้อมูลลงตาราง reviews
             const { error: insertError } = await supabase
                 .from('reviews')
                 .insert([reviewData]);
@@ -161,7 +147,6 @@ export default function ReviewFormPage() {
             setSubmissionMessage('ส่งรีวิวสำเร็จแล้ว!');
             alert('ส่งรีวิวสำเร็จแล้ว!');
 
-            // รีเซ็ตฟอร์มหลังจากส่งสำเร็จ
             setFormData({
                 courseCode: '',
                 term: '',
@@ -186,10 +171,9 @@ export default function ReviewFormPage() {
                 homework: 'น้อยมาก - เยอะมาก',
             });
 
-            // Redirect กลับหน้าหลักหลังจากส่งสำเร็จ
             router.push('/');
 
-        } catch (error: unknown) { // แก้ไข 'any' เป็น 'unknown'
+        } catch (error: unknown) {
             console.error('Submission failed:', error);
             let errorMessage = 'เกิดข้อผิดพลาดในการส่งรีวิว';
             if (error instanceof Error) {
@@ -212,12 +196,15 @@ export default function ReviewFormPage() {
 
             <div className={styles.container}>
                 <div className={styles.header}>
+                    {/* div สำหรับจัดวางปุ่ม 'กลับไปหน้าหลัก' */}
+                    <div className={styles.backButtonContainer}>
+                        <Link href="/" className={styles.backBtn}>← กลับไปหน้าหลัก</Link>
+                    </div>
                     <h1>✍️ เขียนรีวิววิชาเรียน</h1>
                     <p>แบ่งปันประสบการณ์การเรียนให้เพื่อนนักศึกษา</p>
                 </div>
 
                 <form className={styles.reviewForm} onSubmit={handleSubmit}>
-                    {/* ข้อมูลวิชาเรียน */}
                     <div className={styles.formSection}>
                         <h2 className={styles.sectionTitle}>📚 ข้อมูลวิชาเรียน</h2>
 
@@ -250,12 +237,11 @@ export default function ReviewFormPage() {
                             </div>
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>เซคชั่น</label>
-                                <input type="text" name="section" className={styles.formInput} placeholder="เช่น 01, 02, 03" value={formData.section} onChange={handleInputChange} />
+                                <input type="text" name="section" className={styles.formInput} placeholder="เช่น 01, 10000, วันศุกร์เช้า" value={formData.section} onChange={handleInputChange} />
                             </div>
                         </div>
                     </div>
 
-                    {/* การให้คะแนน */}
                     <div className={styles.formSection}>
                         <h2 className={styles.sectionTitle}>⭐ การให้คะแนน</h2>
 
@@ -350,7 +336,6 @@ export default function ReviewFormPage() {
                                 </div>
                             </div>
 
-                            {/* เพิ่มส่วนการให้คะแนนการบ้าน */}
                             <div className={styles.ratingGroup}>
                                 <label className={styles.ratingLabel}>ปริมาณการบ้าน</label>
                                 <div className={styles.ratingContainer}>
@@ -383,7 +368,6 @@ export default function ReviewFormPage() {
                         </div>
                     </div>
 
-                    {/* Tags วิชาเรียน */}
                     <div className={styles.formSection}>
                         <h2 className={styles.sectionTitle}>🏷️ ลักษณะของวิชา</h2>
                         <div className={styles.tagsSection}>
@@ -407,7 +391,7 @@ export default function ReviewFormPage() {
                                              tag === 'มีงานกลุ่ม' ? '👥 ' + tag :
                                              tag === 'ใช้คอมพิวเตอร์' ? '💻 ' + tag :
                                              tag === 'ปฏิบัติจริง' ? '🎯 ' + tag :
-                                             tag === 'ง่ายผ่าน' ? '😴 ' + tag :
+                                             tag === 'ผ่านง่าย' ? '😴 ' + tag :
                                              tag === 'ท้าทาย' ? '🔥 ' + tag : tag
                                             }
                                         </label>
@@ -417,36 +401,6 @@ export default function ReviewFormPage() {
                         </div>
                     </div>
 
-                    {/* ปริมาณงาน (ถูกลบออกจากการส่งข้อมูล แต่ยังคงอยู่ในฟอร์มหากต้องการให้ผู้ใช้กรอก) */}
-                    <div className={styles.formSection}>
-                        <h2 className={styles.sectionTitle}>⏰ ปริมาณงานและเวลาเรียน</h2>
-                        <div className={styles.workloadSection}>
-                            <div className={styles.workloadGrid}>
-                                <div className={styles.formGroup}>
-                                    <label className={styles.formLabel}>ชั่วโมงเรียนต่อสัปดาห์</label>
-                                    <select name="weeklyStudyHours" className={styles.formSelect} value={formData.weeklyStudyHours} onChange={handleInputChange}>
-                                        <option value="">เลือกชั่วโมง</option>
-                                        <option value="1-2">1-2 ชั่วโมง</option>
-                                        <option value="3-4">3-4 ชั่วโมง</option>
-                                        <option value="5-6">5-6 ชั่วโมง</option>
-                                        <option value="7+">7+ ชั่วโมง</option>
-                                    </select>
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label className={styles.formLabel}>เวลาทำงานนอกชั้นเรียน</label>
-                                    <select name="outsideClassHours" className={styles.formSelect} value={formData.outsideClassHours} onChange={handleInputChange}>
-                                        <option value="">เลือกเวลา</option>
-                                        <option value="0-2">0-2 ชั่วโมง/สัปดาห์</option>
-                                        <option value="3-5">3-5 ชั่วโมง/สัปดาห์</option>
-                                        <option value="6-10">6-10 ชั่วโมง/สัปดาห์</option>
-                                        <option value="10+">10+ ชั่วโมง/สัปดาห์</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* รีวิวหลัก */}
                     <div className={styles.formSection}>
                         <h2 className={styles.sectionTitle}>💭 รีวิวของคุณ</h2>
                         <div className={styles.formGroup}>
@@ -481,7 +435,6 @@ export default function ReviewFormPage() {
                         </div>
                     </div>
 
-                    {/* การส่งแบบไม่ระบุชื่อ */}
                     <div className={styles.formSection}>
                         <h2 className={styles.sectionTitle}>🔒 ความเป็นส่วนตัว</h2>
                         <div className={styles.anonymousToggle}>
@@ -498,7 +451,6 @@ export default function ReviewFormPage() {
                         </div>
                     </div>
 
-                    {/* ปุ่มส่ง (ไม่มีปุ่มดูตัวอย่าง) */}
                     <div className={styles.formButtons}>
                         <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`} disabled={isSubmitting}>
                             {isSubmitting ? 'กำลังส่ง...' : '📝 ส่งรีวิว'}

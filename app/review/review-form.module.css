@@ -392,3 +392,63 @@
     transform: scale(1.1);
     box-shadow: 0 8px 25px rgba(0, 123, 255, 0.5);
 }
+
+/* app/review/review-form.module.css */
+
+/* ... (โค้ด CSS เดิมทั้งหมด) ... */
+
+/* เพิ่ม Style สำหรับปุ่ม 'กลับไปหน้าหลัก' ที่มุมซ้ายบน */
+.backButtonContainer {
+    position: absolute; /* ใช้ absolute เพื่อจัดตำแหน่งเทียบกับ .header (ต้องมี position: relative) */
+    top: 20px; /* ระยะห่างจากด้านบน */
+    left: 20px; /* ระยะห่างจากด้านซ้าย */
+    z-index: 10; /* ให้ปุ่มอยู่ด้านบนสุด */
+}
+
+.backBtn {
+    display: inline-flex;
+    align-items: center;
+    color: rgba(0, 123, 255, 0.9); /* สีน้ำเงิน Vibrant Blue */
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    padding: 8px 12px; /* เพิ่ม padding ให้คลิกง่าย */
+    border-radius: 8px; /* เพิ่มมนต์ขอบ */
+    background: rgba(255, 255, 255, 0.1); /* สีพื้นหลังเล็กน้อยเพื่อให้มองเห็นได้ง่ายขึ้น */
+    backdrop-filter: blur(5px); /* เพิ่ม blur เพื่อให้เข้ากับ Header */
+}
+
+.backBtn:hover {
+    color: #007BFF; /* สี Accent เมื่อ Hover */
+    transform: translateX(-3px);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ปรับ Header เพื่อให้ปุ่ม backBtn สามารถใช้ position: absolute ได้ */
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    position: relative; /* <--- เพิ่มตรงนี้: เพื่อให้ backButtonContainer ใช้ position: absolute ได้ */
+    overflow: hidden; /* ป้องกันเนื้อหาล้นออกไป */
+}
+
+/* ... (โค้ด CSS เดิมที่เหลือทั้งหมด) ... */
+
+/* Media queries */
+@media (max-width: 768px) {
+    /* ปรับตำแหน่งปุ่มใน responsive */
+    .backButtonContainer {
+        top: 10px;
+        left: 10px;
+        padding: 5px 8px;
+    }
+    .backBtn {
+        font-size: 12px;
+    }
+    /* ... (Media Query อื่นๆ ที่มีอยู่แล้ว) ... */
+}
