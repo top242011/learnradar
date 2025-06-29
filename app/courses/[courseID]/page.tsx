@@ -36,14 +36,10 @@ interface ReviewData {
 }
 
 // ย้ายฟังก์ชัน formatDate และ calculateDaysAgo ออกมานอก Component
-// เพื่อให้สามารถเรียกใช้ได้ทั้งใน ReviewCard และ CourseReviewsPage
-// formatDate ไม่ได้ใช้ใน CourseReviewsPage โดยตรงแล้ว จึงสามารถลบออกได้หากไม่ต้องการ
-// หรือเก็บไว้หากมีแผนจะใช้ในอนาคต
-
-// const formatDate = (dateString: string) => { // คอมเมนต์หรือลบออกหากไม่ใช้งานนอก ReviewCard
-//   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-//   return new Date(dateString).toLocaleDateString('th-TH', options);
-// };
+const formatDate = (dateString: string) => {
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString('th-TH', options);
+};
 
 const calculateDaysAgo = (dateString: string) => {
   const reviewDate = new Date(dateString);
@@ -96,11 +92,11 @@ const ReviewCard = ({ review }: { review: ReviewData }) => {
     return dateString ? dateString[0].toUpperCase() : 'U';
   };
 
-  // formatDate for meta info in ReviewCard
-  const formatReviewDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('th-TH', options);
-  };
+  // ลบ formatReviewDate ออกไป เนื่องจากไม่ได้ใช้งานแล้ว
+  // const formatReviewDate = (dateString: string) => {
+  //   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+  //   return new Date(dateString).toLocaleDateString('th-TH', options);
+  // };
 
 
   return (
@@ -111,7 +107,6 @@ const ReviewCard = ({ review }: { review: ReviewData }) => {
             {getAvatarChar(review.created_at, review.is_anonymous)}
           </div>
           <div className={styles.reviewerDetails}>
-            {/* แก้ไขการแสดงชื่อนักศึกษาให้ถูกต้องเมื่อไม่ระบุชื่อ */}
             <h4>{review.is_anonymous ? 'Anonymous Student' : `นักศึกษา`}</h4>
             <div className={styles.meta}>
               เรียนเมื่อ: ภาคเรียนที่ {review.term} {review.section_number ? ` • เซคชั่น: ${review.section_number}` : ''} • รีวิวเมื่อ: {calculateDaysAgo(review.created_at)}
@@ -244,7 +239,7 @@ export default function CourseReviewsPage() {
 
       } catch (err: unknown) { // แก้ไข 'any' เป็น 'unknown'
         console.error('Submission failed in fetchData:', err);
-        if (err instanceof Error) { // ตรวจสอบว่าเป็น Error instance
+        if (err instanceof Error) {
           setError(err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูล');
         } else {
           setError('เกิดข้อผิดพลาดที่ไม่รู้จักในการโหลดข้อมูล');

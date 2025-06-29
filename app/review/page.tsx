@@ -120,7 +120,6 @@ export default function ReviewFormPage() {
                             // เพิ่มคอลัมน์ที่มีในตาราง courses ของคุณจากฟอร์ม
                             faculty: 'ไม่ระบุ', // คอลัมน์ faculty มีใน DB แต่ในฟอร์มไม่มี input โดยตรง, ให้ค่าเริ่มต้นไปก่อน
                             credits: 0, // คอลัมน์ credits มีใน DB แต่ในฟอร์มไม่มี input โดยตรง, ให้ค่าเริ่มต้นไปก่อน
-                            // ลบ university_name และ preview ออก เพราะไม่มีในตาราง courses ของคุณ
                         }
                     ])
                     .select('id'); // ดึง ID ของ record ที่เพิ่งสร้าง
@@ -493,7 +492,7 @@ export default function ReviewFormPage() {
                             <div>
                                 <strong>ส่งรีวิวแบบไม่ระบุชื่อ</strong>
                                 <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.2rem' }}>
-                                    เมื่อเปิดใช้งาน รีวิวของคุณจะแสดงเป็น "นักศึกษาคนหนึ่ง" แทนชื่อจริง
+                                    เมื่อเปิดใช้งาน รีวิวของคุณจะแสดงเป็น &quot;นักศึกษาคนหนึ่ง&quot; แทนชื่อจริง
                                 </p>
                             </div>
                         </div>
