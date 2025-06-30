@@ -8,6 +8,16 @@ import { supabase } from '../../utils/supabaseClient';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link'; // นำเข้า Link
 
+// Interface สำหรับข้อมูลวิชาที่แนะนำ
+interface CourseSuggestion {
+    id: string;
+    course_code: string;
+    course_name: string;
+    instructor: string;
+    faculty: string | null;
+    credits: number | null;
+}
+
 export default function ReviewFormPage() {
     const router = useRouter();
 
@@ -41,6 +51,12 @@ export default function ReviewFormPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionMessage, setSubmissionMessage] = useState<string | null>(null);
 
+    // State สำหรับการแนะนำวิชา
+    const [suggestions, setSuggestions] = useState<CourseSuggestion[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [suggestionLoading, setSuggestionLoading] = useState(false);
+
+    // ฟังก์ชันจัดการการเปลี่ยนแปลง Input ทั่วไป
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement;
         setFormData(prev => ({
@@ -49,6 +65,56 @@ export default function ReviewFormPage() {
         }));
     };
 
+    // ฟังก์ชันจัดการการเปลี่ยนแปลง Input ของ Course Code พร้อม Autocomplete
+    const handleCourseCodeChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setFormData(prev => ({ ...prev, courseCode: value }));
+
+        console.log('Course code input:', value); // Debug: ดูค่าที่พิมพ์
+
+        if (value.length > 1) { // เริ่มค้นหาเมื่อพิมพ์ 2 ตัวอักษรขึ้นไป
+            setSuggestionLoading(true);
+            setShowSuggestions(true);
+            try {
+                const { data, error } = await supabase
+                    .from('courses')
+                    .select('id, course_code, course_name, instructor, faculty, credits')
+                    .ilike('course_code', `%${value}%`) // ค้นหา course_code ที่มี value อยู่
+                    .limit(10); // จำกัดผลลัพธ์
+
+                if (error) {
+                    console.error('Error fetching course suggestions:', error.message); // Debug: ข้อผิดพลาดจากการดึงข้อมูล
+                    setSuggestions([]);
+                } else {
+                    console.log('Suggestions received:', data); // Debug: ข้อมูลที่ได้รับจาก Supabase
+                    setSuggestions(data as CourseSuggestion[]);
+                }
+            } catch (err) {
+                console.error('Network error fetching suggestions:', err); // Debug: ข้อผิดพลาดเครือข่าย
+                setSuggestions([]);
+            } finally {
+                setSuggestionLoading(false);
+            }
+        } else {
+            console.log('Input too short for suggestions.'); // Debug: พิมพ์น้อยเกินไป
+            setSuggestions([]);
+            setShowSuggestions(false);
+        }
+    };
+
+    // ฟังก์ชันเมื่อผู้ใช้เลือกรายการแนะนำ
+    const handleSuggestionClick = (suggestion: CourseSuggestion) => {
+        setFormData(prev => ({
+            ...prev,
+            courseCode: suggestion.course_code,
+            courseName: suggestion.course_name,
+            instructor: suggestion.instructor || '', // เติมข้อมูลอาจารย์
+        }));
+        setSuggestions([]); // ซ่อนรายการแนะนำ
+        setShowSuggestions(false);
+    };
+
+    // ฟังก์ชันจัดการ Star Rating
     const handleStarClick = (type: keyof typeof ratingTexts, value: number) => {
         setFormData(prev => ({ ...prev, [`rating${type.charAt(0).toUpperCase() + type.slice(1)}`]: value }));
         const labels: { [key: string]: string[] } = {
@@ -62,6 +128,7 @@ export default function ReviewFormPage() {
         }
     };
 
+    // ฟังก์ชันจัดการ Tag Checkbox
     const handleTagChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { value, checked } = e.target;
         setFormData(prev => {
@@ -72,11 +139,13 @@ export default function ReviewFormPage() {
         });
     };
 
+    // Effect สำหรับ Character Counter
     useEffect(() => {
         setMainReviewCount(`${formData.mainReview.length}/1000`);
         setTipsReviewCount(`${formData.tipsReview.length}/500`);
     }, [formData.mainReview, formData.tipsReview]);
 
+    // ฟังก์ชันจัดการการส่งฟอร์ม
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -85,6 +154,7 @@ export default function ReviewFormPage() {
         try {
             let courseId: string | null = null;
             
+            // ค้นหาคอร์สที่มีอยู่
             const { data: existingCourses, error: courseFetchError } = await supabase
                 .from('courses')
                 .select('id')
@@ -99,6 +169,7 @@ export default function ReviewFormPage() {
             if (existingCourses && existingCourses.length > 0) {
                 courseId = existingCourses[0].id;
             } else {
+                // ถ้าไม่พบ course ให้สร้าง course ใหม่
                 const { data: newCourse, error: newCourseError } = await supabase
                     .from('courses')
                     .insert([
@@ -122,6 +193,7 @@ export default function ReviewFormPage() {
                 throw new Error('Could not determine course ID.');
             }
 
+            // 2. เตรียมข้อมูลสำหรับ insert ลงตาราง reviews
             const reviewData = {
                 course_id: courseId,
                 term: formData.term,
@@ -136,6 +208,7 @@ export default function ReviewFormPage() {
                 is_anonymous: formData.isAnonymous,
             };
 
+            // 3. Insert ข้อมูลลงตาราง reviews
             const { error: insertError } = await supabase
                 .from('reviews')
                 .insert([reviewData]);
@@ -147,6 +220,7 @@ export default function ReviewFormPage() {
             setSubmissionMessage('ส่งรีวิวสำเร็จแล้ว!');
             alert('ส่งรีวิวสำเร็จแล้ว!');
 
+            // รีเซ็ตฟอร์มหลังจากส่งสำเร็จ
             setFormData({
                 courseCode: '',
                 term: '',
@@ -196,7 +270,6 @@ export default function ReviewFormPage() {
 
             <div className={styles.container}>
                 <div className={styles.header}>
-                    {/* div สำหรับจัดวางปุ่ม 'กลับไปหน้าหลัก' */}
                     <div className={styles.backButtonContainer}>
                         <Link href="/" className={styles.backBtn}>← กลับไปหน้าหลัก</Link>
                     </div>
@@ -211,7 +284,30 @@ export default function ReviewFormPage() {
                         <div className={styles.formGrid}>
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>รหัสวิชา <span className={styles.required}>*</span></label>
-                                <input type="text" name="courseCode" className={styles.formInput} placeholder="เช่น CS101, MATH201" value={formData.courseCode} onChange={handleInputChange} required />
+                                <input
+                                    type="text"
+                                    name="courseCode"
+                                    className={styles.formInput}
+                                    placeholder="เช่น CS101, MATH201"
+                                    value={formData.courseCode}
+                                    onChange={handleCourseCodeChange}
+                                    onFocus={() => setShowSuggestions(true)}
+                                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                    required
+                                />
+                                {showSuggestions && (suggestions.length > 0 || suggestionLoading || formData.courseCode.length > 1) && (
+                                    <ul className={styles.suggestionsList}>
+                                        {suggestionLoading && <li className={styles.suggestionLoading}>กำลังค้นหา...</li>}
+                                        {!suggestionLoading && suggestions.map(suggestion => (
+                                            <li key={suggestion.id} onClick={() => handleSuggestionClick(suggestion)}>
+                                                <strong>{suggestion.course_code}</strong> - {suggestion.course_name} ({suggestion.instructor})
+                                            </li>
+                                        ))}
+                                        {!suggestionLoading && suggestions.length === 0 && formData.courseCode.length > 1 && (
+                                            <li className={styles.noSuggestions}>ไม่พบวิชา</li>
+                                        )}
+                                    </ul>
+                                )}
                             </div>
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>ปีการศึกษา/เทอม <span className={styles.required}>*</span></label>
@@ -237,7 +333,7 @@ export default function ReviewFormPage() {
                             </div>
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>เซคชั่น</label>
-                                <input type="text" name="section" className={styles.formInput} placeholder="เช่น 01, 10000, วันศุกร์เช้า" value={formData.section} onChange={handleInputChange} />
+                                <input type="text" name="section" className={styles.formInput} placeholder="เช่น 01, 02, 03" value={formData.section} onChange={handleInputChange} />
                             </div>
                         </div>
                     </div>
@@ -391,7 +487,7 @@ export default function ReviewFormPage() {
                                              tag === 'มีงานกลุ่ม' ? '👥 ' + tag :
                                              tag === 'ใช้คอมพิวเตอร์' ? '💻 ' + tag :
                                              tag === 'ปฏิบัติจริง' ? '🎯 ' + tag :
-                                             tag === 'ผ่านง่าย' ? '😴 ' + tag :
+                                             tag === 'ง่ายผ่าน' ? '😴 ' + tag :
                                              tag === 'ท้าทาย' ? '🔥 ' + tag : tag
                                             }
                                         </label>

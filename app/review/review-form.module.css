@@ -18,6 +18,7 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
+    /* ไม่ต้องใส่ position: relative ตรงนี้ ถ้า header มี position: relative แล้ว */
 }
 
 .header {
@@ -28,6 +29,8 @@
     margin-bottom: 2rem;
     text-align: center;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    position: relative; /* สำคัญ: เพื่อให้ backButtonContainer ใช้ position: absolute ได้ */
+    overflow: hidden; /* ป้องกันเนื้อหาล้นออกไป */
 }
 
 .header h1 {
@@ -95,6 +98,7 @@
 
 .formGroup {
     margin-bottom: 1.5rem;
+    position: relative; /* สำคัญ: เพื่อให้ suggestionsList ใช้ position: absolute ได้ */
 }
 
 .formLabel {
@@ -251,7 +255,7 @@
     background: #F0F8FF; /* เปลี่ยนเป็นสีหลักอ่อนๆ */
     padding: 1.5rem;
     border-radius: 15px;
-    border: 2px solid #D0E0FF; /* เปลี่ยนเป็นสีฟ้าอ่อน */
+    border: 2px solid #D0E0FF; /* สีฟ้าอ่อน */
     margin-top: 1rem;
 }
 
@@ -393,9 +397,59 @@
     box-shadow: 0 8px 25px rgba(0, 123, 255, 0.5);
 }
 
-/* app/review/review-form.module.css */
+/* เพิ่ม Style สำหรับการแนะนำวิชา (Autocomplete) */
+/* ย้าย position: relative จาก .formInput มาที่ .formGroup */
+.formGroup {
+    margin-bottom: 1.5rem;
+    position: relative; /* สำคัญ: เพื่อให้ suggestionsList ใช้ position: absolute ได้ */
+}
 
-/* ... (โค้ด CSS เดิมทั้งหมด) ... */
+/* ลบ position: relative ออกจาก .formInput */
+.formInput {
+    /* ... (Style เดิม) ... */
+    /* ลบ position: relative ออกจากตรงนี้ */
+}
+
+
+.suggestionsList {
+    position: absolute;
+    top: 100%; /* แสดงอยู่ใต้ input */
+    left: 0;
+    right: 0;
+    z-index: 100; /* ให้อยู่ด้านบนสุด */
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 0;
+    margin-top: 5px; /* เว้นระยะห่างจาก input เล็กน้อย */
+    max-height: 200px; /* จำกัดความสูง */
+    overflow-y: auto; /* มี scrollbar ถ้าเนื้อหาเกิน */
+}
+
+.suggestionsList li {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.suggestionsList li:last-child {
+    border-bottom: none;
+}
+
+.suggestionsList li:hover {
+    background-color: #F0F8FF; /* สีหลักอ่อนๆ เมื่อ hover */
+}
+
+.suggestionsList .noSuggestions,
+.suggestionsList .suggestionLoading {
+    padding: 10px 15px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+}
 
 /* เพิ่ม Style สำหรับปุ่ม 'กลับไปหน้าหลัก' ที่มุมซ้ายบน */
 .backButtonContainer {
@@ -425,30 +479,4 @@
 }
 
 /* ปรับ Header เพื่อให้ปุ่ม backBtn สามารถใช้ position: absolute ได้ */
-.header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    position: relative; /* <--- เพิ่มตรงนี้: เพื่อให้ backButtonContainer ใช้ position: absolute ได้ */
-    overflow: hidden; /* ป้องกันเนื้อหาล้นออกไป */
-}
-
-/* ... (โค้ด CSS เดิมที่เหลือทั้งหมด) ... */
-
-/* Media queries */
-@media (max-width: 768px) {
-    /* ปรับตำแหน่งปุ่มใน responsive */
-    .backButtonContainer {
-        top: 10px;
-        left: 10px;
-        padding: 5px 8px;
-    }
-    .backBtn {
-        font-size: 12px;
-    }
-    /* ... (Media Query อื่นๆ ที่มีอยู่แล้ว) ... */
-}
+/* .header มี position: relative แล้วในโค้ดด้านบน ไม่ต้องซ้ำ */
