@@ -153,7 +153,7 @@ export default function ReviewFormPage() {
 
         try {
             let courseId: string | null = null;
-            
+
             // ค้นหาคอร์สที่มีอยู่
             const { data: existingCourses, error: courseFetchError } = await supabase
                 .from('courses')
@@ -313,10 +313,14 @@ export default function ReviewFormPage() {
                                 <label className={styles.formLabel}>ปีการศึกษา/เทอม <span className={styles.required}>*</span></label>
                                 <select name="term" className={styles.formSelect} value={formData.term} onChange={handleInputChange} required>
                                     <option value="">เลือกเทอม</option>
+                                    <option value="2568/2">2568/2</option>
+                                    <option value="2568/1">2568/1</option>
+                                    <option value="2567/2">2567/2</option>
                                     <option value="2567/1">2567/1</option>
                                     <option value="2566/2">2566/2</option>
                                     <option value="2566/1">2566/1</option>
                                     <option value="2565/2">2565/2</option>
+                                    <option value="2565/1">2565/1</option>
                                 </select>
                             </div>
                         </div>
@@ -482,13 +486,13 @@ export default function ReviewFormPage() {
                                         />
                                         <label htmlFor={`tag-${tag}`} className={styles.tagLabel}>
                                             {tag === 'มีการบ้านเยอะ' ? '📝 ' + tag :
-                                             tag === 'ใช้ความคิดเยอะ' ? '🧠 ' + tag :
-                                             tag === 'ต้องท่องจำ' ? '📚 ' + tag :
-                                             tag === 'มีงานกลุ่ม' ? '👥 ' + tag :
-                                             tag === 'ใช้คอมพิวเตอร์' ? '💻 ' + tag :
-                                             tag === 'ปฏิบัติจริง' ? '🎯 ' + tag :
-                                             tag === 'ง่ายผ่าน' ? '😴 ' + tag :
-                                             tag === 'ท้าทาย' ? '🔥 ' + tag : tag
+                                                tag === 'ใช้ความคิดเยอะ' ? '🧠 ' + tag :
+                                                    tag === 'ต้องท่องจำ' ? '📚 ' + tag :
+                                                        tag === 'มีงานกลุ่ม' ? '👥 ' + tag :
+                                                            tag === 'ใช้คอมพิวเตอร์' ? '💻 ' + tag :
+                                                                tag === 'ปฏิบัติจริง' ? '🎯 ' + tag :
+                                                                    tag === 'ง่ายผ่าน' ? '😴 ' + tag :
+                                                                        tag === 'ท้าทาย' ? '🔥 ' + tag : tag
                                             }
                                         </label>
                                     </div>
